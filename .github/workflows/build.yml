@@ -30,6 +30,7 @@ jobs:
           gen "sudo mkdir -p /usr/local/pspdev"
           gen "git clone https://github.com/pspdev/pspdev"
           gen "cd pspdev"
+          gen "./prepare.sh"
           gen "./build-all.sh"
           cat debian/rules
           chmod +x debian/rules
