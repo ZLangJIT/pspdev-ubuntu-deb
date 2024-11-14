@@ -18,8 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: system upgrade
+        run: |
+          sudo apt update
+          sudo apt full-upgrade -y
+
       - name: install ccache
-        run: apt install ccache
+        run: |
+          sudo apt install -y ccache
 
       - name: Initialize ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -52,8 +58,6 @@ jobs:
 
       - name: install deps
         run: |
-          sudo apt update
-          sudo apt full-upgrade -y
           sudo apt install -y devscripts equivs build-essential
           sudo mk-build-deps -ir
 
