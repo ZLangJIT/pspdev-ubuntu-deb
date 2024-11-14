@@ -18,14 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: test pty tty
-        run: |
-          set -v
-          tty || true
-          stty || true
-          su nobody --pty -c "bash -c \"tty || true\""
-          su nobody --pty -c "bash -c \"stty || true\""
-
       - name: system upgrade
         run: |
           sudo apt update
