@@ -33,7 +33,7 @@ jobs:
           max-size: 2048M
           key: ${{ matrix.dist }}-${{ matrix.host }}
         
-      - run: ccache -s
+      - run: ccache -s -v
       
       - name: gen control
         run: |
