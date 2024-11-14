@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_configure:
+	export PSPDEV=/usr/local/pspdev
+	export PATH=$PSPDEV/bin:$PATH
+	sudo mkdir -p $PSPDEV
+	sudo chown -R $USER: $PSPDEV
+
+override_dh_auto_make:
+	export PSPDEV=/usr/local/pspdev
+	export PATH=$PSPDEV/bin:$PATH
+	./build-all.sh
+
+override_dh_auto_install:
+	mkdir -p debian/tmp/usr/local/pspdev
+	sudo mv /usr/local/pspdev debian/tmp/usr/local/pspdev

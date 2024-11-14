@@ -18,25 +18,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: gen rules
-        run: |
-          function gen() {
-              echo "$1" >> debian/rules
-          }
-          gen "#!/usr/bin/bash"
-          gen "echo \"called with \\\"\$@\\\"\""
-          gen "exit 0"
-          gen "export PSPDEV=/usr/local/pspdev"
-          gen "sudo mkdir -p \$PSPDEV"
-          gen "sudo chown -R \$USER: \$PSPDEV"
-          gen "export PATH=\$PSPDEV/bin:\$PATH"
-          gen "git clone https://github.com/pspdev/pspdev"
-          gen "cd pspdev"
-          gen "./prepare.sh"
-          gen "./build-all.sh"
-          cat debian/rules
-          chmod +x debian/rules
+      - name: install ccache
+        run: apt install ccache
 
+      - name: Initialize ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          max-size: 2048M
+          key: ${{ matrix.dist }}-${{ matrix.host }}
+        
+      - run: ccache -s
+      
       - name: gen control
         run: |
           function gen() {
@@ -65,7 +57,9 @@ jobs:
           sudo apt install -y devscripts equivs build-essential
           sudo mk-build-deps -ir
 
+      - name: build deb
       - run: |
+         export DEB_BUILD_OPTIONS="ccache"
          debuild -i -us -uc -b -rsudo
          mv ../*.deb . || true
 
