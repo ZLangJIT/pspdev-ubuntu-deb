@@ -44,7 +44,7 @@ jobs:
           gen "Section: devel"
           gen "Priority: optional"
           gen "Standards-Version: 4.6.0"
-          gen "Build-Depends: texinfo, bison, flex, gettext, libgmp3-dev, libmpfr-dev, libmpc-dev, libusb-dev, libreadline-dev, libcurl4, libcurl4-openssl-dev, libssl-dev, libarchive-dev, libgpgme-dev, python3-pip, python3-venv, cmake, libncurses-dev, automake, pkg-config, wget, git, libtool, gpgme-tool"
+          gen "Build-Depends: texinfo, bison, flex, gettext, libgmp3-dev, libmpfr-dev, libmpc-dev, libusb-dev, libreadline-dev, libcurl4, libcurl4-openssl-dev, libssl-dev, libarchive-dev, libgpgme-dev, python3-pip, python3-venv, cmake, libncurses-dev, automake, pkg-config, wget, git, libtool"
           gen ""
           gen "Package: pspdev"
           gen "Architecture: ${{matrix.host}}"
