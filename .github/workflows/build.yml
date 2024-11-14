@@ -58,7 +58,7 @@ jobs:
           sudo mk-build-deps -ir
 
       - name: build deb
-      - run: |
+        run: |
          export DEB_BUILD_OPTIONS="ccache"
          debuild -i -us -uc -b -rsudo
          mv ../*.deb . || true
