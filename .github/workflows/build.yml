@@ -23,8 +23,8 @@ jobs:
           set -v
           tty || true
           stty || true
-          su root --pty -c "bash -c \"tty || true\""
-          su root --pty -c "bash -c \"stty || true\""
+          su --pty -c "bash -c \"tty || true\""
+          su --pty -c "bash -c \"stty || true\""
 
       - name: system upgrade
         run: |
