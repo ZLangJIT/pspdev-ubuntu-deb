@@ -24,8 +24,8 @@ jobs:
               echo "$1" >> debian/rules
           }
           gen "#!/usr/bin/bash"
-          gen "set -x"
           gen "echo \"called with \\\"\$@\\\"\""
+          gen "exit 0"
           gen "export PSPDEV=/usr/local/pspdev"
           gen "sudo mkdir -p \$PSPDEV"
           gen "sudo chown -R \$USER: \$PSPDEV"
