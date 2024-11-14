@@ -26,7 +26,14 @@ jobs:
           gen "#!/usr/bin/bash"
           gen "export PSPDEV=/usr/local/pspdev"
           gen "export PATH=/usr/local/pspdev/bin:\$PATH"
-          gen "mkdir -p /usr/local/pspdev"
+          gen "whoami"
+          gen "sudo whoami"
+          gen "ls /"
+          gen "ls /usr"
+          gen "ls /usr/local"
+          gen "sudo mkdir -p /usr/local/pspdev"
+          gen "git clone https://github.com/pspdev/pspdev"
+          gen "cd pspdev"
           gen "./build-all.sh"
           cat debian/rules
           chmod +x debian/rules
