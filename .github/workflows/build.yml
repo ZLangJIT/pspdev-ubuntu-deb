@@ -1,0 +1,128 @@
+name: build pspdev
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dist: [noble, jammy, focal, bionic]
+        host: [armhf, arm64, amd64]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: gen_spec
+        run: |
+          function gen() {
+              echo "$1" >> pspdev.spec
+          }
+          gen "name: pspdev"
+          gen "version: 1.0"
+          gen "Release: master"
+          gen "Summary: pspdev toolchain"
+          gen "License: unknown"
+          gen "BuildArch: ${{matrix.host}}"
+          gen "Source0: https://github.com/pspdev/pspdev/archive/refs/heads/master.zip"
+          gen "BuildRequires: texinfo"
+          gen "BuildRequires: bison"
+          gen "BuildRequires: flex"
+          gen "BuildRequires: gettext"
+          gen "BuildRequires: libgmp3-dev"
+          gen "BuildRequires: libmpfr-dev"
+          gen "BuildRequires: libmpc-dev"
+          gen "BuildRequires: libusb-dev"
+          gen "BuildRequires: libreadline-dev"
+          gen "BuildRequires: libcurl4"
+          gen "BuildRequires: libcurl4-openssl-dev"
+          gen "BuildRequires: libssl-dev"
+          gen "BuildRequires: libarchive-dev"
+          gen "BuildRequires: libgpgme-dev"
+          gen "BuildRequires: python3-pip"
+          gen "BuildRequires: python3-venv"
+          gen "BuildRequires: cmake"
+          gen "BuildRequires: libncurses-dev"
+          gen "BuildRequires: automake"
+          gen "BuildRequires: pkg-config"
+          gen "BuildRequires: wget"
+          gen "BuildRequires: git"
+          gen "BuildRequires: libtool"
+          gen ""
+          gen "%description"
+          gen "Sony PSP development toolchain"
+          gen ""
+          gen "%build"
+          gen "export PSPDEV=/usr/local/pspdev"
+          gen "export PATH=/usr/local/pspdev/bin:\$PATH"
+          gen "./build-all.sh"
+          gen ""
+          gen "%files"
+          gen "/usr/local/pspdev"
+          gen ""
+          gen "%changelog"
+          
+      - name: install deps
+        run: |
+          sudo apt update
+          sudo apt install -y sbuild ubuntu-dev-tools debhelper
+          sudo sbuild-adduser $USER
+          
+      - name: Setup tmpfs overlay
+        run: |
+          cat <<EOF > 04tmpfs
+          #!/bin/sh
+
+          set -e
+
+          . "\$SETUP_DATA_DIR/common-data"
+          . "\$SETUP_DATA_DIR/common-functions"
+          . "\$SETUP_DATA_DIR/common-config"
+
+          if [ "\$STAGE" = "setup-start" ]; then
+            mount -t tmpfs overlay /var/lib/schroot/union/overlay
+          elif [ "\$STAGE" = "setup-recover" ]; then
+            mount -t tmpfs overlay /var/lib/schroot/union/overlay
+          elif [ "\$STAGE" = "setup-stop" ]; then
+            umount -f /var/lib/schroot/union/overlay
+          fi
+          EOF
+
+          chmod +x 04tmpfs
+          sudo mv 04tmpfs /etc/schroot/setup.d/
+
+      - name: Make chroot env with cross-compile
+        if: ${{ matrix.host != 'amd64' }}
+        run: |
+          echo "CHROOT=${{ matrix.dist }}-amd64-${{ matrix.host }}" >> $GITHUB_ENV
+          sg sbuild -c 'mk-sbuild --target ${{ matrix.host }} ${{ matrix.dist }}'
+
+      - name: Make chroot env
+        if: ${{ matrix.host == 'amd64' }}
+        run: |
+          echo "CHROOT=${{ matrix.dist }}-${{ matrix.host }}" >> $GITHUB_ENV
+          sg sbuild -c 'mk-sbuild ${{ matrix.dist }}'
+
+      - run: sudo sbuild-update --upgrade $CHROOT
+
+      - run: sudo sbuild-apt $CHROOT apt-get install ca-certificates apt-transport-https
+
+      - run: sg sbuild -c 'sbuild --chroot $CHROOT --host ${{ matrix.host }}'
+
+      - run: ls -l
+
+      - name: Release package
+        uses: softprops/action-gh-release@master
+        with:
+          name: ${{matrix.dist}}-${{matrix.host}}-pspdev.deb
+          tag_name: ${{matrix.dist}}-${{matrix.host}}-pspdev
+          body: |
+            psp-dev toolchain
+          files: |
+            *.deb
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_unmatched_files: true
