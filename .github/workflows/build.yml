@@ -11,61 +11,45 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dist: [noble, jammy, focal, bionic]
-        host: [arm64, amd64]
+        #dist: [noble, jammy, focal, bionic]
+        #host: [arm64, amd64]
+        dist: [noble]
+        host: [amd64]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
 
-      - name: gen_spec
+      - name: gen rules
         run: |
           function gen() {
-              echo "$1" >> pspdev.spec
+              echo "$1" >> debian/rules
           }
-          gen "name: pspdev"
-          gen "version: 1.0"
-          gen "Release: master"
-          gen "Summary: pspdev toolchain"
-          gen "License: unknown"
-          gen "BuildArch: ${{matrix.host}}"
-          gen "Source0: https://github.com/pspdev/pspdev/archive/refs/heads/master.zip"
-          gen "BuildRequires: texinfo"
-          gen "BuildRequires: bison"
-          gen "BuildRequires: flex"
-          gen "BuildRequires: gettext"
-          gen "BuildRequires: libgmp3-dev"
-          gen "BuildRequires: libmpfr-dev"
-          gen "BuildRequires: libmpc-dev"
-          gen "BuildRequires: libusb-dev"
-          gen "BuildRequires: libreadline-dev"
-          gen "BuildRequires: libcurl4"
-          gen "BuildRequires: libcurl4-openssl-dev"
-          gen "BuildRequires: libssl-dev"
-          gen "BuildRequires: libarchive-dev"
-          gen "BuildRequires: libgpgme-dev"
-          gen "BuildRequires: python3-pip"
-          gen "BuildRequires: python3-venv"
-          gen "BuildRequires: cmake"
-          gen "BuildRequires: libncurses-dev"
-          gen "BuildRequires: automake"
-          gen "BuildRequires: pkg-config"
-          gen "BuildRequires: wget"
-          gen "BuildRequires: git"
-          gen "BuildRequires: libtool"
-          gen ""
-          gen "%description"
-          gen "Sony PSP development toolchain"
-          gen ""
-          gen "%build"
+          gen "#!/usr/bin/bash"
           gen "export PSPDEV=/usr/local/pspdev"
           gen "export PATH=/usr/local/pspdev/bin:\$PATH"
           gen "./build-all.sh"
+          cat debian/rules
+
+      - name: gen control
+        run: |
+          function gen() {
+              echo "$1" >> debian/control
+          }
+          gen "Source: pspdev"
+          gen "Maintainer: PSPDEV"
+          gen "Section: devel"
+          gen "Priority: optional"
+          gen "Standards-Version: 4.6.0"
+          gen "Architecture: ${{matrix.host}}"
+          gen "Build-Depends: texinfo, bison, flex, gettext, libgmp3-dev, libmpfr-dev, libmpc-dev, libusb-dev, libreadline-dev, libcurl4, libcurl4-openssl-dev, libssl-dev, libarchive-dev, libgpgme-dev, python3-pip, python3-venv, cmake, libncurses-dev, automake, pkg-config, wget, git, libtool"
           gen ""
-          gen "%files"
-          gen "/usr/local/pspdev"
+          gen "Package: pspdev"
+          gen "Architecture: ${{matrix.host}}"
+          gen "Depends: \${shlibs:depends}"
+          gen "Description: Sony PSP development toolchain"
           gen ""
-          gen "%changelog"
-          
+          cat debian/control
+
       - name: install deps
         run: |
           sudo apt update
