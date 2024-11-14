@@ -24,14 +24,11 @@ jobs:
               echo "$1" >> debian/rules
           }
           gen "#!/usr/bin/bash"
+          gen "set -x"
           gen "export PSPDEV=/usr/local/pspdev"
           gen "export PATH=/usr/local/pspdev/bin:\$PATH"
           gen "whoami"
-          gen "sudo whoami"
-          gen "ls /"
-          gen "ls /usr"
-          gen "ls /usr/local"
-          gen "sudo mkdir -p /usr/local/pspdev"
+          gen "mkdir -p /usr/local/pspdev"
           gen "git clone https://github.com/pspdev/pspdev"
           gen "cd pspdev"
           gen "./build-all.sh"
